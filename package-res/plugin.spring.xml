@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:pen="http://www.pentaho.com/schema/pentaho-system"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd http://www.pentaho.com/schema/pentaho-system http://www.pentaho.com/schema/pentaho-system.xsd"
+       default-lazy-init="true">
+       
+  <!-- Register this Spring ApplicationContext with the PentahoSystem. Without this, publishing beans is not possible. -->
+  <bean class="org.pentaho.platform.engine.core.system.objfac.spring.ApplicationContextPentahoSystemRegisterer" scope="singleton"/>
+
+  <bean id="userRoleListService0"
+		class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserRoleListService">
+		<property name="userDetailsService" ref="customUserDetailsService" />
+		<property name="userRoleDao" ref="hibernateUserRoleDao" />
+  </bean>
+  
+  <bean id="customUserRoleListService" class="org.pentaho.platform.plugin.services.security.userrole.ExtraRolesUserRoleListServiceDecorator">
+    <property name="userRoleListService" ref="userRoleListService0" />
+    <property name="extraRoles" ref="extraRoles" />
+	<pen:publish as-type="INTERFACES">
+	   <pen:attributes>
+	        <pen:attr key="providerName" value="custom"/>
+	   </pen:attributes>
+	</pen:publish>
+  </bean>
+
+  <bean id="customAuthenticationProvider" class="org.springframework.security.providers.dao.DaoAuthenticationProvider">
+    <property name="userDetailsService">
+      <ref local="customUserDetailsService" />
+    </property>
+    <property name="passwordEncoder">
+      <ref local="passwordEncoder" />
+    </property>
+  		<pen:publish as-type="org.springframework.security.providers.AuthenticationProvider">
+	      <pen:attributes>
+	        <pen:attr key="providerName" value="custom"/>
+	      </pen:attributes>
+	    </pen:publish>
+  </bean>
+
+  <!-- UserDetailsService that delegates to an IUserRoleDao -->
+  <bean id="customUserDetailsService" class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserDetailsService">
+    <property name="userRoleDao">
+      <ref local="hibernateUserRoleDao" />
+    </property>
+    <property name="rolePrefix" value="" />
+    <property name="defaultRole" ref="defaultRole" />
+	  <pen:publish as-type="INTERFACES">
+	      <pen:attributes>
+	        <pen:attr key="providerName" value="custom"/>
+	      </pen:attributes>
+	  </pen:publish>
+  </bean>
+
+  <!-- IUserRoleDao implementation -->
+  <bean id="hibernateUserRoleDao" class="org.pentaho.custom.authentication.provider.userroledao.hibernate.HibernateUserRoleDao"
+    init-method="init">
+    <property name="sessionFactory">
+      <ref local="sessionFactory" />
+    </property>
+    <property name="initHandler">
+      <!-- detects if USERS table is empty and if so, inserts sample users and roles -->
+      <bean class="org.pentaho.custom.authentication.provider.userroledao.hibernate.sample.SampleUsersAndRolesInitHandler">
+        <property name="sessionFactory">
+          <ref local="sessionFactory" />
+        </property>
+        <property name="userRoleDao">
+          <ref local="txnUserRoleDao" />
+        </property>
+      </bean>
+    </property>
+  </bean>
+
+  <!-- an IUserRoleDao that decorates another IUserRoleDao with transactions -->
+  <bean id="txnUserRoleDao" class="org.pentaho.custom.authentication.provider.userroledao.hibernate.UserRoleDaoTransactionDecorator">
+    <property name="userRoleDao">
+      <ref local="hibernateUserRoleDao" />
+    </property>
+    <property name="transactionTemplate">
+      <bean class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW" />
+        <property name="transactionManager">
+          <bean id="hibernateTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+            <property name="sessionFactory">
+              <ref local="sessionFactory" />
+            </property>
+          </bean>
+        </property>
+      </bean>
+    </property>
+  </bean>
+  
+  <!-- session factory containing mapping files and config properties -->
+  <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+    <property name="mappingResources">
+      <list>
+        <value>PentahoUser.hbm.xml</value>
+        <value>PentahoRole.hbm.xml</value>
+      </list>
+    </property>
+    <property name="hibernateProperties">
+      <props>
+        <prop key="hibernate.connection.driver_class">${jdbc.driver}</prop>
+        <prop key="hibernate.connection.url">${jdbc.url}</prop>
+        <prop key="hibernate.connection.username">${jdbc.username}</prop>
+        <prop key="hibernate.connection.password">${jdbc.password}</prop>
+        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+        <prop key="hibernate.hbm2ddl.auto">update</prop>
+        <prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
+        <prop key="hibernate.generate_statistics">true</prop>
+        <prop key="hibernate.cache.use_query_cache">true</prop>
+        <prop key="hibernate.show_sql">false</prop>
+        <prop key="hibernate.connection.pool_size">10</prop>
+      </props>
+    </property>
+  </bean>
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="custom-authentication.properties" />
+  </bean>
+  
+  <bean id="customPasswordEncoder"
+    class="org.springframework.security.providers.encoding.PlaintextPasswordEncoder" />
+ 
+
+
+</beans>

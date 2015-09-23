@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin title="Custom Authentication Plugin" name="custom-authentication-plugin">
+
+   <lifecycle-listener class="org.pentaho.custom.authentication.provider.CustomAuthenticationProviderPluginLifecycleListener"/>
+   <static-paths>
+   </static-paths>
+
+    <menu-items/>
+
+    <overlays/>
+
+    <content-types/>
+
+</plugin>
+
