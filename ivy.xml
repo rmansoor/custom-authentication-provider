@@ -31,6 +31,7 @@
 		<dependency org="org.springframework" name="spring-orm" 	rev="${dependency.spring.framework.revision}" transitive="true"/>
 		<dependency org="org.springframework.security" name="spring-security-core" rev="${dependency.spring.security.revision}" transitive="false"/>
 	    <dependency org="net.sf.ehcache" name="ehcache-core" rev="2.0.1" />
+	    <dependency org="javassist" name="javassist" rev="3.12.1.GA" />
 	    <dependency org="org.hibernate" name="hibernate" rev="3.2.6.ga">
 	      <!--
 	        include these jars, needed for unit tests. child projects may choose to exclude these, if deploying to an app

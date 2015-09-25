@@ -12,11 +12,34 @@
 		class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserRoleListService">
 		<property name="userDetailsService" ref="customUserDetailsService" />
 		<property name="userRoleDao" ref="hibernateUserRoleDao" />
+	     <property name="userNameUtils">
+	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
+	          <pen:attributes>
+	          	<pen:attr key="id" value="tenantedUserNameUtils"/>
+	          </pen:attributes>
+	       </pen:bean>
+	    </property>    
+	    <property name="roleNameUtils">
+	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
+	          <pen:attributes>
+	          	<pen:attr key="id" value="tenantedRoleNameUtils"/>
+	          </pen:attributes>
+	       </pen:bean>
+	    </property>    
+	    <property name="roleMapper">
+	      <ref bean="customRoleMapper" />
+	    </property>   		
   </bean>
   
   <bean id="customUserRoleListService" class="org.pentaho.platform.plugin.services.security.userrole.ExtraRolesUserRoleListServiceDecorator">
     <property name="userRoleListService" ref="userRoleListService0" />
-    <property name="extraRoles" ref="extraRoles" />
+    <property name="extraRoles">
+      <pen:bean class="java.lang.String">
+          <pen:attributes>
+          	<pen:attr key="id" value="extraRoles"/>
+          </pen:attributes>
+       </pen:bean>
+    </property>   
 	<pen:publish as-type="INTERFACES">
 	   <pen:attributes>
 	        <pen:attr key="providerName" value="custom"/>
@@ -29,7 +52,7 @@
       <ref local="customUserDetailsService" />
     </property>
     <property name="passwordEncoder">
-      <ref local="passwordEncoder" />
+      <ref local="customPasswordEncoder" />
     </property>
   		<pen:publish as-type="org.springframework.security.providers.AuthenticationProvider">
 	      <pen:attributes>
@@ -43,8 +66,22 @@
     <property name="userRoleDao">
       <ref local="hibernateUserRoleDao" />
     </property>
+     <property name="userNameUtils">
+      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
+          <pen:attributes>
+          	<pen:attr key="id" value="tenantedUserNameUtils"/>
+          </pen:attributes>
+       </pen:bean>
+    </property>   
+    <property name="roleMapper" ref="customRoleMapper" />
     <property name="rolePrefix" value="" />
-    <property name="defaultRole" ref="defaultRole" />
+    <property name="defaultRole">
+      <pen:bean class="java.lang.String">
+          <pen:attributes>
+          	<pen:attr key="id" value="defaultRole"/>
+          </pen:attributes>
+       </pen:bean>
+    </property>   
 	  <pen:publish as-type="INTERFACES">
 	      <pen:attributes>
 	        <pen:attr key="providerName" value="custom"/>
@@ -94,8 +131,8 @@
   <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
     <property name="mappingResources">
       <list>
-        <value>PentahoUser.hbm.xml</value>
-        <value>PentahoRole.hbm.xml</value>
+        <value>CustomUser.hbm.xml</value>
+        <value>CustomRole.hbm.xml</value>
       </list>
     </property>
     <property name="hibernateProperties">
@@ -106,7 +143,7 @@
         <prop key="hibernate.connection.password">${jdbc.password}</prop>
         <prop key="hibernate.dialect">${hibernate.dialect}</prop>
         <prop key="hibernate.hbm2ddl.auto">update</prop>
-        <prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
+        <prop key="hibernate.cache.provider_class">net.sf.ehcache.hibernate.SingletonEhCacheProvider</prop>
         <prop key="hibernate.generate_statistics">true</prop>
         <prop key="hibernate.cache.use_query_cache">true</prop>
         <prop key="hibernate.show_sql">false</prop>
@@ -120,8 +157,18 @@
   </bean>
   
   <bean id="customPasswordEncoder"
-    class="org.springframework.security.providers.encoding.PlaintextPasswordEncoder" />
- 
+    class="org.pentaho.custom.authentication.provider.Base64PasswordEncoder" />
 
+    <!-- map custom role to pentaho(s) security role(s) -->
+    <util:map id="customRoleMap">
+        <entry key="Admin" value="Administrator"/>
+        <entry key="Authenticated" value="Authenticated"/>
+    </util:map>
 
+    <bean id="customRoleMapper"
+          class="org.pentaho.custom.authentication.provider.CustomRoleMapper">
+        <constructor-arg>
+            <ref local="customRoleMap"/>
+        </constructor-arg>
+    </bean>
 </beans>

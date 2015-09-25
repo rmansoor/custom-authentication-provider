@@ -21,32 +21,39 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- * A role in the Pentaho platform. Contains a set of users to which the role is assigned. A role is also known as an 
- * authority.
+ * A user of the Pentaho platform. Contains a set of roles for which this user is a member.
  * 
  * @author mlowery
  */
-public interface IPentahoRole extends Serializable {
+public interface IUser extends Serializable {
 
-  String getName();
+  String getUsername();
 
-  String getDescription();
+  Set<IRole> getRoles();
 
-  void setDescription(String description);
-
-  Set<IPentahoUser> getUsers();
-
-  void setUsers(Set<IPentahoUser> users);
+  void setRoles(Set<IRole> roles);
 
   /**
    * @return Same meaning as Set.add return value.
    */
-  boolean addUser(IPentahoUser user);
+  boolean addRole(IRole role);
 
   /**
    * @return Same meaning as Set.remove return value.
    */
-  boolean removeUser(IPentahoUser user);
+  boolean removeRole(IRole role);
 
-  void clearUsers();
+  void clearRoles();
+
+  String getPassword();
+
+  void setPassword(String password);
+
+  boolean isEnabled();
+
+  void setEnabled(boolean enabled);
+
+  String getDescription();
+
+  void setDescription(String description);
 }

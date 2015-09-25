@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.pentaho.custom.authentication.provider.example">
+<hibernate-mapping package="org.pentaho.custom.authentication.provider">
 
   <!--
     Depends on Hibernate configuration with hibernate.hbm2ddl.auto=update.
   -->
 
-  <class name="PentahoUser" table="USERS">
+  <class name="CustomUser" table="USERS">
     <cache usage="read-write" />
     <id access="field" name="username" column="USERNAME" type="string" length="50">
       <generator class="assigned" />
@@ -18,7 +18,7 @@
     <!-- lazy=false since session is closed in dao; if lazy=true, session would need to stay open beyond dao call -->
     <set name="roles" table="GRANTED_AUTHORITIES" order-by="AUTHORITY" lazy="false">
       <key column="USERNAME" />
-      <many-to-many column="AUTHORITY" class="PentahoRole" />
+      <many-to-many column="AUTHORITY" class="CustomRole" />
     </set>
   </class>
 

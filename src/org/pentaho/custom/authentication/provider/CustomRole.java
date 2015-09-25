@@ -33,10 +33,10 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * are sometimes stored in Java collections. The users set is mutable and we don't want two roles that have the same 
  * name but different users in the same set.</p>
  * 
- * @see PentahoUser
+ * @see CustomUser
  * @author mlowery
  */
-public class PentahoRole implements IPentahoRole {
+public class CustomRole implements IRole {
 
   // ~ Static fields/initializers ====================================================================================== 
 
@@ -50,19 +50,19 @@ public class PentahoRole implements IPentahoRole {
 
   private String description;
 
-  private Set<IPentahoUser> users = new HashSet<IPentahoUser>();
+  private Set<IUser> users = new HashSet<IUser>();
 
   // ~ Constructors ====================================================================================================
 
-  protected PentahoRole() {
+  public CustomRole() {
     // constructor reserved for use by Hibernate
   }
 
-  public PentahoRole(String name) {
+  public CustomRole(String name) {
     this(name, null);
   }
 
-  public PentahoRole(String name, String description) {
+  public CustomRole(String name, String description) {
     this.name = name;
     this.description = description;
   }
@@ -70,10 +70,10 @@ public class PentahoRole implements IPentahoRole {
   /**
    * Copy constructor
    */
-  public PentahoRole(IPentahoRole roleToCopy) {
+  public CustomRole(IRole roleToCopy) {
     this.name = roleToCopy.getName();
     this.description = roleToCopy.getDescription();
-    users = new HashSet<IPentahoUser>(roleToCopy.getUsers());
+    users = new HashSet<IUser>(roleToCopy.getUsers());
   }
 
   // ~ Methods =========================================================================================================
@@ -91,13 +91,13 @@ public class PentahoRole implements IPentahoRole {
   }
 
   public boolean equals(Object obj) {
-    if (obj instanceof PentahoRole == false) {
+    if (obj instanceof CustomRole == false) {
       return false;
     }
     if (this == obj) {
       return true;
     }
-    PentahoRole rhs = (PentahoRole) obj;
+    CustomRole rhs = (CustomRole) obj;
     return new EqualsBuilder().append(name, rhs.name).isEquals();
   }
 
@@ -109,19 +109,19 @@ public class PentahoRole implements IPentahoRole {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append(FIELD_NAME, name).toString();
   }
 
-  public void setUsers(Set<IPentahoUser> users) {
+  public void setUsers(Set<IUser> users) {
     this.users = users;
   }
 
-  public Set<IPentahoUser> getUsers() {
+  public Set<IUser> getUsers() {
     return users;
   }
 
-  public boolean addUser(IPentahoUser user) {
+  public boolean addUser(IUser user) {
     return users.add(user);
   }
 
-  public boolean removeUser(IPentahoUser user) {
+  public boolean removeUser(IUser user) {
     return users.remove(user);
   }
 

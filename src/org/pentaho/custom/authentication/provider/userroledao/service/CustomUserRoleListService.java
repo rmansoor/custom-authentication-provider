@@ -22,9 +22,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.pentaho.platform.api.engine.IUserRoleListService;
+import org.pentaho.platform.api.engine.security.IAuthenticationRoleMapper;
 import org.pentaho.platform.api.mt.ITenant;
-import org.pentaho.custom.authentication.provider.IPentahoRole;
-import org.pentaho.custom.authentication.provider.IPentahoUser;
+import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
+import org.pentaho.custom.authentication.provider.IRole;
+import org.pentaho.custom.authentication.provider.IUser;
 import org.pentaho.custom.authentication.provider.IUserRoleDao;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.GrantedAuthority;
@@ -46,6 +48,12 @@ public class CustomUserRoleListService implements IUserRoleListService {
   private IUserRoleDao userRoleDao;
 
   private UserDetailsService userDetailsService;
+  
+  private ITenantedPrincipleNameResolver userNameUtils;
+
+  private ITenantedPrincipleNameResolver roleNameUtils;
+
+  private IAuthenticationRoleMapper roleMapper;
 
   // ~ Constructors ====================================================================================================
 
@@ -55,24 +63,28 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   // ~ Methods =========================================================================================================
 
+
   public List<String> getAllRoles() {
-    List<IPentahoRole> roles = userRoleDao.getRoles();
+    List<IRole> roles = userRoleDao.getRoles();
 
     List<String> auths = new ArrayList<String>(roles.size());
 
-    for (IPentahoRole role : roles) {
-      auths.add(role.getName());
+    for ( IRole role : roles ) {
+      if ( roleMapper != null ) {
+        auths.add( roleMapper.toPentahoRole( role.getName() ) );
+      } else {
+        auths.add( role.getName() );
+      }
     }
-
     return auths;
   }
 
   public List<String> getAllUsers() {
-    List<IPentahoUser> users = userRoleDao.getUsers();
+    List<IUser> users = userRoleDao.getUsers();
 
     List<String> usernames = new ArrayList<String>();
 
-    for (IPentahoUser user : users) {
+    for (IUser user : users) {
       usernames.add(user.getUsername());
     }
 
@@ -81,23 +93,28 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   private List<String> getRolesForUser(String username) throws UsernameNotFoundException,
       DataAccessException {
-    UserDetails user = userDetailsService.loadUserByUsername(username);
+    UserDetails user = userDetailsService.loadUserByUsername(userNameUtils.getPrincipleName( username ));
     List<String> roles = new ArrayList<String>(user.getAuthorities().length);
     for (GrantedAuthority role : user.getAuthorities()) {
-      roles.add(role.getAuthority());
+      if ( roleMapper != null ) {
+        roles.add( roleMapper.toPentahoRole( role.getAuthority() ) );
+      } else {
+        roles.add( role.getAuthority() );
+      }
     }
     return roles;
   }
 
   private List<String> getUsersInRole(String roleName) {
-    IPentahoRole role = userRoleDao.getRole(roleName);
+    String updateRole = roleNameUtils.getPrincipleName( roleName );
+    IRole role = userRoleDao.getRole(updateRole);
     if (role == null) {
       return Collections.emptyList();
     }
 
     List<String> usernames = new ArrayList<String>();
 
-    for (IPentahoUser user : role.getUsers()) {
+    for (IUser user : role.getUsers()) {
       usernames.add(user.getUsername());
     }
 
@@ -133,13 +150,36 @@ public class CustomUserRoleListService implements IUserRoleListService {
   @Override
   public List<String> getUsersInRole( ITenant tenant, String role ) {
     // TODO Auto-generated method stub
-    return getUsersInRole(role);
+    return getUsersInRole(roleNameUtils.getPrincipleName(role));
   }
 
   @Override
   public List<String> getRolesForUser( ITenant tenant, String username ) {
     // TODO Auto-generated method stub
-    return getRolesForUser(username);
+    return getRolesForUser(userNameUtils.getPrincipleName(username));
   }
 
+  public ITenantedPrincipleNameResolver getUserNameUtils() {
+    return userNameUtils;
+  }
+
+  public void setUserNameUtils( ITenantedPrincipleNameResolver userNameUtils ) {
+    this.userNameUtils = userNameUtils;
+  }
+
+  public ITenantedPrincipleNameResolver getRoleNameUtils() {
+    return roleNameUtils;
+  }
+
+  public void setRoleNameUtils( ITenantedPrincipleNameResolver roleNameUtils ) {
+    this.roleNameUtils = roleNameUtils;
+  }
+
+  public IAuthenticationRoleMapper getRoleMapper() {
+    return roleMapper;
+  }
+
+  public void setRoleMapper( IAuthenticationRoleMapper roleMapper ) {
+    this.roleMapper = roleMapper;
+  }
 }

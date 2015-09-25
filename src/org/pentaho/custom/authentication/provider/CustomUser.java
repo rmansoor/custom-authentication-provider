@@ -32,10 +32,10 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * are sometimes stored in Java collections. The roles set is mutable and we don't want two users that have the same 
  * username but different roles in the same set.</p>
  * 
- * @see PentahoRole
+ * @see CustomRole
  * @author mlowery
  */
-public class PentahoUser implements IPentahoUser {
+public class CustomUser implements IUser {
 
   // ~ Static fields/initializers ====================================================================================== 
 
@@ -61,19 +61,19 @@ public class PentahoUser implements IPentahoUser {
 
   private boolean enabled = true;
 
-  private Set<IPentahoRole> roles = new HashSet<IPentahoRole>();
+  private Set<IRole> roles = new HashSet<IRole>();
 
   // ~ Constructors ====================================================================================================
 
-  protected PentahoUser() {
+  public CustomUser() {
     // constructor reserved for use by Hibernate
   }
 
-  public PentahoUser(String username) {
+  public CustomUser(String username) {
     this(username, null, null, true);
   }
 
-  public PentahoUser(String username, String password, String description, boolean enabled) {
+  public CustomUser(String username, String password, String description, boolean enabled) {
     this.username = username;
     this.password = password;
     this.description = description;
@@ -83,11 +83,11 @@ public class PentahoUser implements IPentahoUser {
   /**
    * Copy constructor
    */
-  public PentahoUser(IPentahoUser userToCopy) {
+  public CustomUser(IUser userToCopy) {
     this.username = userToCopy.getUsername();
     this.description = userToCopy.getDescription();
     this.enabled = userToCopy.isEnabled();
-    roles = new HashSet<IPentahoRole>(userToCopy.getRoles());
+    roles = new HashSet<IRole>(userToCopy.getRoles());
   }
 
   // ~ Methods =========================================================================================================
@@ -112,22 +112,22 @@ public class PentahoUser implements IPentahoUser {
     this.enabled = enabled;
   }
 
-  public void setRoles(Set<IPentahoRole> roles) {
+  public void setRoles(Set<IRole> roles) {
     this.roles = roles;
   }
 
-  public Set<IPentahoRole> getRoles() {
+  public Set<IRole> getRoles() {
     return roles;
   }
 
   public boolean equals(Object obj) {
-    if (obj instanceof PentahoUser == false) {
+    if (obj instanceof CustomUser == false) {
       return false;
     }
     if (this == obj) {
       return true;
     }
-    PentahoUser rhs = (PentahoUser) obj;
+    CustomUser rhs = (CustomUser) obj;
     return new EqualsBuilder().append(username, rhs.username).isEquals();
   }
 
@@ -148,11 +148,11 @@ public class PentahoUser implements IPentahoUser {
         FIELD_PASSWORD, PASSWORD_MASK).append(FIELD_DESCRIPTION, description).append(FIELD_ENABLED, enabled).toString();
   }
 
-  public boolean addRole(IPentahoRole role) {
+  public boolean addRole(IRole role) {
     return roles.add(role);
   }
 
-  public boolean removeRole(IPentahoRole role) {
+  public boolean removeRole(IRole role) {
     return roles.remove(role);
   }
 

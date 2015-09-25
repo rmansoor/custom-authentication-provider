@@ -23,12 +23,12 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.pentaho.custom.authentication.provider.AlreadyExistsException;
-import org.pentaho.custom.authentication.provider.IPentahoRole;
-import org.pentaho.custom.authentication.provider.IPentahoUser;
+import org.pentaho.custom.authentication.provider.IRole;
+import org.pentaho.custom.authentication.provider.IUser;
 import org.pentaho.custom.authentication.provider.IUserRoleDao;
 import org.pentaho.custom.authentication.provider.NotFoundException;
-import org.pentaho.custom.authentication.provider.PentahoRole;
-import org.pentaho.custom.authentication.provider.PentahoUser;
+import org.pentaho.custom.authentication.provider.CustomRole;
+import org.pentaho.custom.authentication.provider.CustomUser;
 import org.pentaho.custom.authentication.provider.UncategorizedUserRoleDaoException;
 import org.pentaho.custom.authentication.provider.userroledao.messages.Messages;
 import org.springframework.dao.DataAccessException;
@@ -49,9 +49,9 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
 
   // ~ Static fields/initializers ====================================================================================== 
 
-  public static final String DEFAULT_ALL_USERS_QUERY = "from PentahoUser order by username"; //$NON-NLS-1$
+  public static final String DEFAULT_ALL_USERS_QUERY = "from CustomUser order by username"; //$NON-NLS-1$
 
-  public static final String DEFAULT_ALL_ROLES_QUERY = "from PentahoRole order by name"; //$NON-NLS-1$
+  public static final String DEFAULT_ALL_ROLES_QUERY = "from CustomRole order by name"; //$NON-NLS-1$
 
   // ~ Instance fields =================================================================================================
 
@@ -78,7 +78,7 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
     }
   }
 
-  public void createUser(IPentahoUser userToCreate) throws AlreadyExistsException, UncategorizedUserRoleDaoException {
+  public void createUser(IUser userToCreate) throws AlreadyExistsException, UncategorizedUserRoleDaoException {
     Assert.notNull(userToCreate, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0001_USER_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(userToCreate.getUsername(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0002_USERNAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
@@ -97,12 +97,12 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
     }
   }
 
-  public void deleteUser(IPentahoUser userToDelete) throws NotFoundException, UncategorizedUserRoleDaoException {
+  public void deleteUser(IUser userToDelete) throws NotFoundException, UncategorizedUserRoleDaoException {
     Assert.notNull(userToDelete, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0001_USER_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(userToDelete.getUsername(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0002_USERNAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
-    IPentahoUser user = getUser(userToDelete.getUsername());
+    IUser user = getUser(userToDelete.getUsername());
     if (user != null) {
       try {
         getHibernateTemplate().delete(user);
@@ -115,11 +115,11 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
     }
   }
 
-  public IPentahoUser getUser(String username) throws UncategorizedUserRoleDaoException {
+  public IUser getUser(String username) throws UncategorizedUserRoleDaoException {
     Assert.hasLength(username, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0002_USERNAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
     try {
-      return (PentahoUser) getHibernateTemplate().get(PentahoUser.class, username);
+      return (CustomUser) getHibernateTemplate().get(CustomUser.class, username);
     } catch (DataAccessException e) {
       throw new UncategorizedUserRoleDaoException(Messages.getInstance()
           .getString("HibernateUserRoleDao.ERROR_0004_DATA_ACCESS_EXCEPTION"), e); //$NON-NLS-1$
@@ -127,7 +127,7 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
   }
 
   @SuppressWarnings("unchecked")
-  public List<IPentahoUser> getUsers() throws UncategorizedUserRoleDaoException {
+  public List<IUser> getUsers() throws UncategorizedUserRoleDaoException {
     try {
       return getHibernateTemplate().find(getAllUsersQuery());
     } catch (DataAccessException e) {
@@ -136,7 +136,7 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
     }
   }
 
-  public void updateUser(IPentahoUser userToUpdate) throws NotFoundException, UncategorizedUserRoleDaoException {
+  public void updateUser(IUser userToUpdate) throws NotFoundException, UncategorizedUserRoleDaoException {
     Assert.notNull(userToUpdate, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0001_USER_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(userToUpdate.getUsername(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0002_USERNAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
@@ -160,7 +160,7 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
    * Hibernate documentation section 6.3.2. Bidirectional associations. Basically, this means that the users set of this
    * role must be managed manually.
    */
-  public void createRole(IPentahoRole roleToCreate) throws AlreadyExistsException, UncategorizedUserRoleDaoException {
+  public void createRole(IRole roleToCreate) throws AlreadyExistsException, UncategorizedUserRoleDaoException {
     Assert.notNull(roleToCreate, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0005_ROLE_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(roleToCreate.getName(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0006_ROLE_NAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
@@ -178,7 +178,7 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
 
     // manually manage users set
 
-    for (IPentahoUser user : roleToCreate.getUsers()) {
+    for (IUser user : roleToCreate.getUsers()) {
       addUser(roleToCreate, user.getUsername());
     }
   }
@@ -188,16 +188,16 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
    * Hibernate documentation section 6.3.2. Bidirectional associations. Basically, this means that the users set of this
    * role must be managed manually.
    */
-  public void deleteRole(IPentahoRole roleToDelete) throws NotFoundException, UncategorizedUserRoleDaoException {
+  public void deleteRole(IRole roleToDelete) throws NotFoundException, UncategorizedUserRoleDaoException {
     Assert.notNull(roleToDelete, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0005_ROLE_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(roleToDelete.getName(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0006_ROLE_NAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
-    IPentahoRole role = getRole(roleToDelete.getName());
+    IRole role = getRole(roleToDelete.getName());
     if (role != null) {
       try {
         // for each user that is a member of this role, manually remove the role assignment from the user
-        for (IPentahoUser user : role.getUsers()) {
+        for (IUser user : role.getUsers()) {
           user.removeRole(role);
           updateUser(user);
         }
@@ -212,11 +212,11 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
     }
   }
 
-  public IPentahoRole getRole(String name) throws UncategorizedUserRoleDaoException {
+  public IRole getRole(String name) throws UncategorizedUserRoleDaoException {
     Assert.hasLength(name, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0006_ROLE_NAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
     try {
-      return (PentahoRole) getHibernateTemplate().get(PentahoRole.class, name);
+      return (CustomRole) getHibernateTemplate().get(CustomRole.class, name);
     } catch (DataAccessException e) {
       throw new UncategorizedUserRoleDaoException(Messages.getInstance()
           .getString("HibernateUserRoleDao.ERROR_0004_DATA_ACCESS_EXCEPTION"), e); //$NON-NLS-1$
@@ -224,7 +224,7 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
   }
 
   @SuppressWarnings("unchecked")
-  public List<IPentahoRole> getRoles() throws UncategorizedUserRoleDaoException {
+  public List<IRole> getRoles() throws UncategorizedUserRoleDaoException {
     try {
       return getHibernateTemplate().find(getAllRolesQuery());
     } catch (DataAccessException e) {
@@ -239,15 +239,15 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
    * role must be managed manually.
    */
   @SuppressWarnings("unchecked")
-  public void updateRole(IPentahoRole roleToUpdate) throws NotFoundException, UncategorizedUserRoleDaoException {
+  public void updateRole(IRole roleToUpdate) throws NotFoundException, UncategorizedUserRoleDaoException {
     Assert.notNull(roleToUpdate, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0005_ROLE_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(roleToUpdate.getName(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0006_ROLE_NAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
-    IPentahoRole originalRole = getRole(roleToUpdate.getName());
+    IRole originalRole = getRole(roleToUpdate.getName());
 
     // make a copy of originalRole's users since the merge call below will change the users
-    Set<IPentahoUser> originalRoleUsers = new HashSet<IPentahoUser>(originalRole.getUsers());
+    Set<IUser> originalRoleUsers = new HashSet<IUser>(originalRole.getUsers());
 
     if (originalRole != null) {
       try {
@@ -264,16 +264,16 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
 
     // use relative complement (aka set-theoretic difference, aka subtraction) to get the users to add and users to 
     // remove
-    Set<IPentahoUser> usersToAdd = new HashSet<IPentahoUser>(CollectionUtils.subtract(roleToUpdate.getUsers(),
+    Set<IUser> usersToAdd = new HashSet<IUser>(CollectionUtils.subtract(roleToUpdate.getUsers(),
         originalRoleUsers));
-    Set<IPentahoUser> usersToRemove = new HashSet<IPentahoUser>(CollectionUtils.subtract(originalRoleUsers,
+    Set<IUser> usersToRemove = new HashSet<IUser>(CollectionUtils.subtract(originalRoleUsers,
         roleToUpdate.getUsers()));
 
-    for (IPentahoUser user : usersToAdd) {
+    for (IUser user : usersToAdd) {
       addUser(roleToUpdate, user.getUsername());
     }
 
-    for (IPentahoUser user : usersToRemove) {
+    for (IUser user : usersToRemove) {
       removeUser(roleToUpdate, user.getUsername());
     }
 
@@ -283,14 +283,14 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
    * This method is necessary because this is the inverse end of a bidirectional many-to-many relationship. See 
    * Hibernate documentation section 6.3.2. Bidirectional associations.
    */
-  protected void addUser(IPentahoRole roleToUpdate, String username) throws NotFoundException,
+  protected void addUser(IRole roleToUpdate, String username) throws NotFoundException,
       UncategorizedUserRoleDaoException {
     Assert.notNull(roleToUpdate, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0005_ROLE_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(roleToUpdate.getName(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0006_ROLE_NAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
     Assert.hasLength(username, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0002_USERNAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
-    IPentahoUser user = getUser(username);
+    IUser user = getUser(username);
     if (user != null) {
       user.addRole(roleToUpdate);
       updateUser(user);
@@ -303,14 +303,14 @@ public class HibernateUserRoleDao extends HibernateDaoSupport implements IUserRo
    * This method is necessary because this is the inverse end of a bidirectional many-to-many relationship. See 
    * Hibernate documentation section 6.3.2. Bidirectional associations.
    */
-  protected void removeUser(IPentahoRole roleToUpdate, String username) throws NotFoundException,
+  protected void removeUser(IRole roleToUpdate, String username) throws NotFoundException,
       UncategorizedUserRoleDaoException {
     Assert.notNull(roleToUpdate, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0005_ROLE_CANNOT_BE_NULL")); //$NON-NLS-1$
     Assert.hasLength(roleToUpdate.getName(), Messages.getInstance()
         .getString("HibernateUserRoleDao.ERROR_0006_ROLE_NAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
     Assert.hasLength(username, Messages.getInstance().getString("HibernateUserRoleDao.ERROR_0002_USERNAME_CANNOT_BE_BLANK")); //$NON-NLS-1$
 
-    IPentahoUser user = getUser(username);
+    IUser user = getUser(username);
     if (user != null) {
       user.removeRole(roleToUpdate);
       updateUser(user);

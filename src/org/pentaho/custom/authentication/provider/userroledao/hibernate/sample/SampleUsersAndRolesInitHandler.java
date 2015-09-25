@@ -18,8 +18,8 @@
 package org.pentaho.custom.authentication.provider.userroledao.hibernate.sample;
 
 import org.pentaho.custom.authentication.provider.IUserRoleDao;
-import org.pentaho.custom.authentication.provider.PentahoRole;
-import org.pentaho.custom.authentication.provider.PentahoUser;
+import org.pentaho.custom.authentication.provider.CustomRole;
+import org.pentaho.custom.authentication.provider.CustomUser;
 import org.pentaho.custom.authentication.provider.UncategorizedUserRoleDaoException;
 import org.pentaho.custom.authentication.provider.userroledao.hibernate.HibernateUserRoleDao.InitHandler;
 import org.pentaho.custom.authentication.provider.userroledao.messages.Messages;
@@ -58,12 +58,12 @@ public class SampleUsersAndRolesInitHandler extends HibernateDaoSupport implemen
       boolean noUsers = userRoleDao.getUsers().isEmpty();
 
       if (noUsers) {
-        PentahoRole adminRole = new PentahoRole("Admin", "Super User"); //$NON-NLS-1$ //$NON-NLS-2$
-        PentahoRole ceo = new PentahoRole("ceo", "Chief Executive Officer"); //$NON-NLS-1$ //$NON-NLS-2$
-        PentahoRole cto = new PentahoRole("cto", "Chief Technology Officer"); //$NON-NLS-1$ //$NON-NLS-2$
-        PentahoRole dev = new PentahoRole("dev", "Developer"); //$NON-NLS-1$ //$NON-NLS-2$
-        PentahoRole devMgr = new PentahoRole("devmgr", "Development Manager"); //$NON-NLS-1$ //$NON-NLS-2$
-        PentahoRole is = new PentahoRole("is", "Information Services"); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomRole adminRole = new CustomRole("Admin", "Super User"); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomRole ceo = new CustomRole("ceo", "Chief Executive Officer"); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomRole cto = new CustomRole("cto", "Chief Technology Officer"); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomRole dev = new CustomRole("dev", "Developer"); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomRole devMgr = new CustomRole("devmgr", "Development Manager"); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomRole is = new CustomRole("is", "Information Services"); //$NON-NLS-1$ //$NON-NLS-2$
 
         userRoleDao.createRole(adminRole);
         userRoleDao.createRole(ceo);
@@ -72,17 +72,17 @@ public class SampleUsersAndRolesInitHandler extends HibernateDaoSupport implemen
         userRoleDao.createRole(devMgr);
         userRoleDao.createRole(is);
 
-        PentahoUser admin = new PentahoUser("admin", "c2VjcmV0", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser admin = new CustomUser("admin", "c2VjcmV0", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         admin.addRole(adminRole);
-        PentahoUser joe = new PentahoUser("joe", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser joe = new CustomUser("joe", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         joe.addRole(adminRole);
         joe.addRole(ceo);
-        PentahoUser pat = new PentahoUser("pat", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser pat = new CustomUser("pat", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         pat.addRole(dev);
-        PentahoUser suzy = new PentahoUser("suzy", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser suzy = new CustomUser("suzy", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         suzy.addRole(cto);
         suzy.addRole(is);
-        PentahoUser tiffany = new PentahoUser("tiffany", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser tiffany = new CustomUser("tiffany", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         tiffany.addRole(dev);
         tiffany.addRole(devMgr);
 

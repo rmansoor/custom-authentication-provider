@@ -26,24 +26,24 @@ import java.util.List;
  */
 public interface IUserRoleDao {
 
-  void createUser(IPentahoUser newUser) throws AlreadyExistsException, UncategorizedUserRoleDaoException;
+  void createUser(IUser newUser) throws AlreadyExistsException, UncategorizedUserRoleDaoException;
 
-  void deleteUser(IPentahoUser user) throws NotFoundException, UncategorizedUserRoleDaoException;
+  void deleteUser(IUser user) throws NotFoundException, UncategorizedUserRoleDaoException;
 
-  IPentahoUser getUser(String name) throws UncategorizedUserRoleDaoException;
+  IUser getUser(String name) throws UncategorizedUserRoleDaoException;
 
-  List<IPentahoUser> getUsers() throws UncategorizedUserRoleDaoException;
+  List<IUser> getUsers() throws UncategorizedUserRoleDaoException;
 
-  void updateUser(IPentahoUser user) throws NotFoundException, UncategorizedUserRoleDaoException;
+  void updateUser(IUser user) throws NotFoundException, UncategorizedUserRoleDaoException;
 
-  void createRole(IPentahoRole newRole) throws AlreadyExistsException, UncategorizedUserRoleDaoException;
+  void createRole(IRole newRole) throws AlreadyExistsException, UncategorizedUserRoleDaoException;
 
-  void deleteRole(IPentahoRole role) throws NotFoundException, UncategorizedUserRoleDaoException;
+  void deleteRole(IRole role) throws NotFoundException, UncategorizedUserRoleDaoException;
 
-  IPentahoRole getRole(String name) throws UncategorizedUserRoleDaoException;
+  IRole getRole(String name) throws UncategorizedUserRoleDaoException;
 
-  List<IPentahoRole> getRoles() throws UncategorizedUserRoleDaoException;
+  List<IRole> getRoles() throws UncategorizedUserRoleDaoException;
 
-  void updateRole(IPentahoRole role) throws NotFoundException, UncategorizedUserRoleDaoException;
+  void updateRole(IRole role) throws NotFoundException, UncategorizedUserRoleDaoException;
 
 }
