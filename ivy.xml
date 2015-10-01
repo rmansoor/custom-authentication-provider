@@ -14,19 +14,6 @@
 	</publications>
     
 	<dependencies defaultconf="default->default">
-		<dependency org="${ivy.artifact.group}" name="hibernate-authentication-provider" rev="${project.revision}" changing="true" transitive="false"/>
-		<dependency org="${ivy.artifact.group}" name="pentaho-platform-api" rev="${project.revision}" changing="true" transitive="false"/>
-		<dependency org="${ivy.artifact.group}" name="pentaho-platform-core" rev="${project.revision}" changing="true" transitive="false"/>
-		<dependency org="${ivy.artifact.group}" name="pentaho-platform-repository" rev="${project.revision}" changing="true" transitive="false"/>
-
-	    <!-- external dependencies -->
-	    <dependency org="commons-collections" name="commons-collections" rev="3.2" transitive="false"/>
-	    <dependency org="commons-lang" name="commons-lang" rev="2.4" transitive="false"/>
-	    <dependency org="commons-codec"       name="commons-codec"       rev="1.9"   transitive="false"/>
-
-		<dependency org="org.springframework" name="spring-core" 		rev="${dependency.spring.framework.revision}" transitive="false"/>
-		<dependency org="org.springframework" name="spring-orm" 	rev="${dependency.spring.framework.revision}" transitive="true"/>
-		<dependency org="org.springframework.security" name="spring-security-core" rev="${dependency.spring.security.revision}" transitive="false"/>
 
 	</dependencies>
 </ivy-module>

@@ -8,8 +8,6 @@
 	<target name="assemble.copy-libs">
 		<copy todir="${approot.stage.dir}/lib">
 			<fileset dir="${lib.dir}" excludes="**/*.jar, **/*.rar" />
-			<fileset dir="${lib.dir}" includes="**/spring-orm*.jar" />
-			<fileset dir="${lib.dir}" includes="**/hibernate-authentication*.jar" />
 			<fileset file="${dist.dir}/${ivy.artifact.id}-${project.revision}.jar" />
 		</copy>
 	</target>
