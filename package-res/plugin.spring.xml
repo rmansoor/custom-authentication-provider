@@ -8,58 +8,19 @@
   <!-- Register this Spring ApplicationContext with the PentahoSystem. Without this, publishing beans is not possible. -->
   <bean class="org.pentaho.platform.engine.core.system.objfac.spring.ApplicationContextPentahoSystemRegisterer" scope="singleton"/>
 
-  <bean id="userRoleListService0"
-		class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserRoleListService">
-		<property name="userDetailsService" ref="customUserDetailsService" />
-		<property name="userRoleDao" ref="hibernateUserRoleDao" />
-	     <property name="userNameUtils">
-	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
-	          <pen:attributes>
-	          	<pen:attr key="id" value="tenantedUserNameUtils"/>
-	          </pen:attributes>
-	       </pen:bean>
-	    </property>    
-	    <property name="roleNameUtils">
-	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
-	          <pen:attributes>
-	          	<pen:attr key="id" value="tenantedRoleNameUtils"/>
-	          </pen:attributes>
-	       </pen:bean>
-	    </property>    
-	    <property name="roleMapper">
-	      <ref bean="customRoleMapper" />
-	    </property>   		
-  </bean>
-  
-  <bean id="customUserRoleListService" class="org.pentaho.platform.plugin.services.security.userrole.ExtraRolesUserRoleListServiceDecorator">
-    <property name="userRoleListService" ref="userRoleListService0" />
-    <property name="extraRoles">
-      <pen:bean class="java.lang.String">
-          <pen:attributes>
-          	<pen:attr key="id" value="extraRoles"/>
-          </pen:attributes>
-       </pen:bean>
-    </property>   
-	<pen:publish as-type="INTERFACES">
-	   <pen:attributes>
-	        <pen:attr key="providerName" value="custom"/>
-	   </pen:attributes>
-	</pen:publish>
-  </bean>
 
-  <bean id="customAuthenticationProvider" class="org.springframework.security.providers.dao.DaoAuthenticationProvider">
-    <property name="userDetailsService">
-      <ref local="customUserDetailsService" />
-    </property>
-    <property name="passwordEncoder">
-      <ref local="customPasswordEncoder" />
-    </property>
-  		<pen:publish as-type="org.springframework.security.providers.AuthenticationProvider">
-	      <pen:attributes>
-	        <pen:attr key="providerName" value="custom"/>
-	      </pen:attributes>
-	    </pen:publish>
-  </bean>
+    <!-- map custom role to pentaho(s) security role(s) -->
+    <util:map id="customRoleMap">
+        <entry key="Admin" value="Administrator"/>
+    </util:map>
+
+	<!--  Custom Role mapper containing the mapping between custom to pentaho roles  -->	
+    <bean id="customRoleMapper"
+          class="org.pentaho.custom.authentication.provider.CustomRoleMapper">
+        <constructor-arg>
+            <ref local="customRoleMap"/>
+        </constructor-arg>
+    </bean>
 
   <!-- UserDetailsService that delegates to an IUserRoleDao -->
   <bean id="customUserDetailsService" class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserDetailsService">
@@ -88,6 +49,74 @@
 	      </pen:attributes>
 	  </pen:publish>
   </bean>
+
+  <!--  Custom UserRoleListService -->
+  <!--  Requires UserDetailsService, UserRoleDao, userNameUtils, roleNameUtils and roleMapper -->
+  <bean id="userRoleListService0"
+		class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserRoleListService">
+		<property name="userDetailsService" ref="customUserDetailsService" />
+		<property name="userRoleDao" ref="hibernateUserRoleDao" />
+	     <property name="userNameUtils">
+	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
+	          <pen:attributes>
+	          	<pen:attr key="id" value="tenantedUserNameUtils"/>
+	          </pen:attributes>
+	       </pen:bean>
+	    </property>    
+	    <property name="roleNameUtils">
+	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
+	          <pen:attributes>
+	          	<pen:attr key="id" value="tenantedRoleNameUtils"/>
+	          </pen:attributes>
+	       </pen:bean>
+	    </property>    
+	    <property name="roleMapper">
+	      <ref bean="customRoleMapper" />
+	    </property>   		
+  </bean>
+  
+  <!--  Custom UserRoleListService with ExtraRoles -->
+  <!--  Requires UserRoleListService and extraRoles -->
+  <!--  ExtraRoles include roles like Authenticated and Anonymous -->
+  
+  <bean id="customUserRoleListService" class="org.pentaho.platform.plugin.services.security.userrole.ExtraRolesUserRoleListServiceDecorator">
+    <property name="userRoleListService" ref="userRoleListService0" />
+    <property name="extraRoles">
+      <pen:bean class="java.lang.String">
+          <pen:attributes>
+          	<pen:attr key="id" value="extraRoles"/>
+          </pen:attributes>
+       </pen:bean>
+    </property>   
+	<pen:publish as-type="INTERFACES">
+	   <pen:attributes>
+	        <pen:attr key="providerName" value="custom"/>
+	   </pen:attributes>
+	</pen:publish>
+  </bean>
+
+  <!-- Custom Authentication Provider Bean -->
+  <!-- Requires UserDetailsService and PasswordEncoder -->
+  <bean id="customAuthenticationProvider" class="org.springframework.security.providers.dao.DaoAuthenticationProvider">
+    <property name="userDetailsService">
+      <ref local="customUserDetailsService" />
+    </property>
+    <property name="passwordEncoder">
+      <ref local="customPasswordEncoder" />
+    </property>
+	<pen:publish as-type="org.springframework.security.providers.AuthenticationProvider">
+      <pen:attributes>
+        <pen:attr key="providerName" value="custom"/>
+      </pen:attributes>
+    </pen:publish>
+  </bean>
+
+  
+  <!--  Created a simple Base64Password Encoder for encoding password for the users -->  
+  <bean id="customPasswordEncoder"
+    class="org.pentaho.custom.authentication.provider.Base64PasswordEncoder" />
+
+
 
   <!-- IUserRoleDao implementation -->
   <bean id="hibernateUserRoleDao" class="org.pentaho.custom.authentication.provider.userroledao.hibernate.HibernateUserRoleDao"
@@ -155,20 +184,5 @@
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="location" value="custom-authentication.properties" />
   </bean>
-  
-  <bean id="customPasswordEncoder"
-    class="org.pentaho.custom.authentication.provider.Base64PasswordEncoder" />
 
-    <!-- map custom role to pentaho(s) security role(s) -->
-    <util:map id="customRoleMap">
-        <entry key="Admin" value="Administrator"/>
-        <entry key="Authenticated" value="Authenticated"/>
-    </util:map>
-
-    <bean id="customRoleMapper"
-          class="org.pentaho.custom.authentication.provider.CustomRoleMapper">
-        <constructor-arg>
-            <ref local="customRoleMap"/>
-        </constructor-arg>
-    </bean>
 </beans>

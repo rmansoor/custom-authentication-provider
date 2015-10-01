@@ -91,10 +91,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
       List<GrantedAuthority> dbAuths = new ArrayList<GrantedAuthority>(Arrays.asList(auths));
       addCustomAuthorities(user.getUsername(), dbAuths);
-      
-      if (defaultRole != null && !dbAuths.contains(defaultRole)) {
-        dbAuths.add(defaultRole);
-      }
+
       
       if (dbAuths.size() == 0) {
         throw new UsernameNotFoundException(Messages.getInstance()

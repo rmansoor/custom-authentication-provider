@@ -74,15 +74,15 @@ public class SampleUsersAndRolesInitHandler extends HibernateDaoSupport implemen
 
         CustomUser admin = new CustomUser("admin", "c2VjcmV0", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         admin.addRole(adminRole);
-        CustomUser joe = new CustomUser("joe", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser joe = new CustomUser("jim", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         joe.addRole(adminRole);
         joe.addRole(ceo);
-        CustomUser pat = new CustomUser("pat", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser pat = new CustomUser("john", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         pat.addRole(dev);
-        CustomUser suzy = new CustomUser("suzy", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser suzy = new CustomUser("susan", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         suzy.addRole(cto);
         suzy.addRole(is);
-        CustomUser tiffany = new CustomUser("tiffany", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
+        CustomUser tiffany = new CustomUser("sally", "cGFzc3dvcmQ=", null, true); //$NON-NLS-1$ //$NON-NLS-2$
         tiffany.addRole(dev);
         tiffany.addRole(devMgr);
 

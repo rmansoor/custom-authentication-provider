@@ -3,14 +3,16 @@
 <plugin title="Custom Authentication Plugin" name="custom-authentication-plugin">
 
    <lifecycle-listener class="org.pentaho.custom.authentication.provider.CustomAuthenticationProviderPluginLifecycleListener"/>
+   
    <static-paths>
+   
    </static-paths>
 
-    <menu-items/>
+   <menu-items/>
 
-    <overlays/>
+   <overlays/>
 
-    <content-types/>
+   <content-types/>
 
 </plugin>
 
