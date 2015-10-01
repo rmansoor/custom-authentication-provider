@@ -53,8 +53,6 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   private ITenantedPrincipleNameResolver roleNameUtils;
 
-  private IAuthenticationRoleMapper roleMapper;
-
   // ~ Constructors ====================================================================================================
 
   public CustomUserRoleListService() {
@@ -70,11 +68,7 @@ public class CustomUserRoleListService implements IUserRoleListService {
     List<String> auths = new ArrayList<String>(roles.size());
 
     for ( IRole role : roles ) {
-      if ( roleMapper != null ) {
-        auths.add( roleMapper.toPentahoRole( role.getName() ) );
-      } else {
         auths.add( role.getName() );
-      }
     }
     return auths;
   }
@@ -91,21 +85,41 @@ public class CustomUserRoleListService implements IUserRoleListService {
     return usernames;
   }
 
-  private List<String> getRolesForUser(String username) throws UsernameNotFoundException,
-      DataAccessException {
-    UserDetails user = userDetailsService.loadUserByUsername(userNameUtils.getPrincipleName( username ));
-    List<String> roles = new ArrayList<String>(user.getAuthorities().length);
-    for (GrantedAuthority role : user.getAuthorities()) {
-      if ( roleMapper != null ) {
-        roles.add( roleMapper.toPentahoRole( role.getAuthority() ) );
-      } else {
-        roles.add( role.getAuthority() );
-      }
-    }
-    return roles;
+  @Override
+  public List<String> getSystemRoles() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
-  private List<String> getUsersInRole(String roleName) {
+  @Override
+  public List<String> getAllRoles( ITenant tenant ) {
+    List<IRole> roles = userRoleDao.getRoles();
+
+    List<String> auths = new ArrayList<String>(roles.size());
+
+    for ( IRole role : roles ) {
+        auths.add( role.getName() );
+    }
+    
+    return auths;
+  }
+
+  @Override
+  public List<String> getAllUsers( ITenant tenant ) {
+    List<IUser> users = userRoleDao.getUsers();
+
+    List<String> usernames = new ArrayList<String>();
+
+    for (IUser user : users) {
+      usernames.add(user.getUsername());
+    }
+
+    return usernames;
+  }
+
+  @Override
+  public List<String> getUsersInRole( ITenant tenant, String roleName ) {
+
     String updateRole = roleNameUtils.getPrincipleName( roleName );
     IRole role = userRoleDao.getRole(updateRole);
     if (role == null) {
@@ -119,6 +133,17 @@ public class CustomUserRoleListService implements IUserRoleListService {
     }
 
     return usernames;
+
+  }
+
+  @Override
+  public List<String> getRolesForUser( ITenant tenant, String username ) {
+    UserDetails user = userDetailsService.loadUserByUsername(userNameUtils.getPrincipleName( username ));
+    List<String> roles = new ArrayList<String>(user.getAuthorities().length);
+    for (GrantedAuthority role : user.getAuthorities()) {
+        roles.add( role.getAuthority() );
+    }
+    return roles;
   }
 
   public void setUserRoleDao(IUserRoleDao userRoleDao) {
@@ -127,36 +152,6 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   public void setUserDetailsService(UserDetailsService userDetailsService) {
     this.userDetailsService = userDetailsService;
-  }
-
-  @Override
-  public List<String> getSystemRoles() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<String> getAllRoles( ITenant tenant ) {
-    // TODO Auto-generated method stub
-    return getAllRoles();
-  }
-
-  @Override
-  public List<String> getAllUsers( ITenant tenant ) {
-    // TODO Auto-generated method stub
-    return getAllUsers();
-  }
-
-  @Override
-  public List<String> getUsersInRole( ITenant tenant, String role ) {
-    // TODO Auto-generated method stub
-    return getUsersInRole(roleNameUtils.getPrincipleName(role));
-  }
-
-  @Override
-  public List<String> getRolesForUser( ITenant tenant, String username ) {
-    // TODO Auto-generated method stub
-    return getRolesForUser(userNameUtils.getPrincipleName(username));
   }
 
   public ITenantedPrincipleNameResolver getUserNameUtils() {
@@ -173,13 +168,5 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   public void setRoleNameUtils( ITenantedPrincipleNameResolver roleNameUtils ) {
     this.roleNameUtils = roleNameUtils;
-  }
-
-  public IAuthenticationRoleMapper getRoleMapper() {
-    return roleMapper;
-  }
-
-  public void setRoleMapper( IAuthenticationRoleMapper roleMapper ) {
-    this.roleMapper = roleMapper;
   }
 }

@@ -24,8 +24,6 @@ import org.pentaho.platform.authentication.hibernate.IRole;
 import org.pentaho.platform.authentication.hibernate.IUser;
 import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
 import org.pentaho.platform.authentication.hibernate.UncategorizedUserRoleDaoException;
-import org.pentaho.custom.authentication.provider.messages.Messages;
-import org.pentaho.platform.api.engine.security.IAuthenticationRoleMapper;
 import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.GrantedAuthority;
@@ -34,7 +32,7 @@ import org.springframework.security.userdetails.User;
 import org.springframework.security.userdetails.UserDetails;
 import org.springframework.security.userdetails.UserDetailsService;
 import org.springframework.security.userdetails.UsernameNotFoundException;
-import org.springframework.util.Assert;
+
 
 /**
  * A <code>UserDetailsService</code> that delegates to an {@link IUserRoleDao} to load users by username.
@@ -47,8 +45,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
   // ~ Instance fields =================================================================================================
 
-  private String rolePrefix = "ROLE_"; //$NON-NLS-1$
-
   private IUserRoleDao userRoleDao;
   
   /**
@@ -58,8 +54,6 @@ public class CustomUserDetailsService implements UserDetailsService {
   
   private ITenantedPrincipleNameResolver userNameUtils;
   
-  private IAuthenticationRoleMapper roleMapper;
-
   // ~ Constructors ====================================================================================================
 
   // ~ Methods =========================================================================================================
@@ -73,103 +67,42 @@ public class CustomUserDetailsService implements UserDetailsService {
     try {
       user = userRoleDao.getUser(getUserNameUtils().getPrincipleName( username));
     } catch (UncategorizedUserRoleDaoException e) {
-      throw new UserRoleDaoUserDetailsServiceException(Messages.getInstance()
-          .getString("UserRoleDaoUserDetailsService.ERROR_0003_DATA_ACCESS_EXCEPTION"), e); //$NON-NLS-1$
+      throw new UserDetailsException("Unable to get the user role dao"); //$NON-NLS-1$
     }
 
     if (user == null) {
-      throw new UsernameNotFoundException(Messages.getInstance().getString("UserRoleDaoUserDetailsService.ERROR_0001_USER_NOT_FOUND")); //$NON-NLS-1$
+      throw new UsernameNotFoundException("Username [ " + getUserNameUtils().getPrincipleName( username) + "] not found"); //$NON-NLS-1$
     } else {
       // convert IUser to a UserDetails instance
       int authsSize = user.getRoles() != null ? user.getRoles().size() : 0;
       GrantedAuthority[] auths = new GrantedAuthority[authsSize];
       int i = 0;
       for (IRole role : user.getRoles()) {
-        auths[i++] = new GrantedAuthorityImpl(rolePrefix + role.getName());
+        auths[i++] = new GrantedAuthorityImpl(role.getName());
       }
 
-      List<GrantedAuthority> dbAuths = new ArrayList<GrantedAuthority>(Arrays.asList(auths));
-      addCustomAuthorities(user.getUsername(), dbAuths);
-
+      List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>(Arrays.asList(auths));
       
-      if (dbAuths.size() == 0) {
-        throw new UsernameNotFoundException(Messages.getInstance()
-            .getString("UserRoleDaoUserDetailsService.ERROR_0002_NO_AUTHORITIES")); //$NON-NLS-1$
+      if (authorities.size() == 0) {
+        throw new UsernameNotFoundException("User [ " + getUserNameUtils().getPrincipleName( username) + "] does not have any role"); //$NON-NLS-1$
       }
       
-      GrantedAuthority[] arrayAuths = dbAuths.toArray(new GrantedAuthority[dbAuths.size()]);
+      if ( defaultRole != null && !authorities.contains( defaultRole ) ) {
+        authorities.add( defaultRole );
+      }
+
+      GrantedAuthority[] arrayAuths = authorities.toArray(new GrantedAuthority[authorities.size()]);
 
       return new User(user.getUsername(), user.getPassword(), user.isEnabled(), ACCOUNT_NON_EXPIRED, CREDS_NON_EXPIRED,
           ACCOUNT_NON_LOCKED, arrayAuths);
     }
   }
 
-  /**
-   * Allows subclasses to add their own granted authorities to the list to be returned in the
-   * <code>User</code>.
-   *
-   * @param username the username, for use by finder methods
-   * @param authorities the current granted authorities, as populated from the <code>authoritiesByUsername</code>
-   *        mapping
-   */
-  protected void addCustomAuthorities(String username, List authorities) {
-    if ( defaultRole != null && !authorities.contains( defaultRole ) ) {
-      authorities.add( defaultRole );
-    }
-
-    // also add roles mapped to pentaho security roles if available
-    if ( roleMapper != null ) {
-      List<GrantedAuthority> currentAuthorities = new ArrayList<GrantedAuthority>();
-      currentAuthorities.addAll( authorities );
-
-      for ( GrantedAuthority role : currentAuthorities ) {
-        GrantedAuthority mappedRole = new GrantedAuthorityImpl( roleMapper.toPentahoRole( role.getAuthority() ) );
-        if ( !authorities.contains( mappedRole ) ) {
-          authorities.add( mappedRole );
-        }
-      }
-    }
-
-  }
-  
-
-  /**
-   * Allows a default role prefix to be specified. If this is set to a non-empty value, then it is
-   * automatically prepended to any roles read in from the db. This may for example be used to add the
-   * <code>ROLE_</code> prefix expected to exist in role names (by default) by some other Spring Security framework
-   * classes, in the case that the prefix is not already present in the db.
-   *
-   * @param rolePrefix the new prefix
-   */
-  public void setRolePrefix(String rolePrefix) {
-    if (rolePrefix == null) {
-      this.rolePrefix = ""; //$NON-NLS-1$
-    } else {
-      this.rolePrefix = rolePrefix;
-    }
-  }
-
-  public String getRolePrefix() {
-    return rolePrefix;
-  }
   
   public void setUserRoleDao(IUserRoleDao userRoleDao) {
     this.userRoleDao = userRoleDao;
   }
 
-  /**
-   * The default role which will be assigned to all users.
-   *
-   * @param defaultRole the role name, including any desired prefix.
-   */
-  public void setDefaultRole(String defaultRole) {
-      Assert.notNull(defaultRole);
-      this.defaultRole = new GrantedAuthorityImpl(defaultRole);
-  }
-  
-  public void setRoleMapper( IAuthenticationRoleMapper roleMapper ) {
-    this.roleMapper = roleMapper;
-  }
 
   public ITenantedPrincipleNameResolver getUserNameUtils() {
     return userNameUtils;
@@ -178,21 +111,32 @@ public class CustomUserDetailsService implements UserDetailsService {
   public void setUserNameUtils( ITenantedPrincipleNameResolver userNameUtils ) {
     this.userNameUtils = userNameUtils;
   }  
-
+  
+  /**
+   * The default role which will be assigned to all users.
+   *
+   * @param defaultRole the role name, including any desired prefix.
+   */
+  public void setDefaultRole(String defaultRole) {
+      this.defaultRole = new GrantedAuthorityImpl(defaultRole);
+  }
+  
   /**
    * A data access exception specific to a <code>IUserRoleDao</code>-based <code>UserDetailsService</code>.
    */
-  protected class UserRoleDaoUserDetailsServiceException extends DataAccessException {
+  protected class UserDetailsException extends DataAccessException {
 
     private static final long serialVersionUID = -3598806635515478946L;
 
-    public UserRoleDaoUserDetailsServiceException(String msg) {
+    public UserDetailsException(String msg) {
       super(msg);
     }
 
-    public UserRoleDaoUserDetailsServiceException(String msg, Throwable cause) {
+    public UserDetailsException(String msg, Throwable cause) {
       super(msg, cause);
     }
 
   }
+
+
 }

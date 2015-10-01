@@ -17,7 +17,6 @@
 		<dependency org="${ivy.artifact.group}" name="hibernate-authentication-provider" rev="${project.revision}" changing="true" transitive="false"/>
 		<dependency org="${ivy.artifact.group}" name="pentaho-platform-api" rev="${project.revision}" changing="true" transitive="false"/>
 		<dependency org="${ivy.artifact.group}" name="pentaho-platform-core" rev="${project.revision}" changing="true" transitive="false"/>
-		<dependency org="${ivy.artifact.group}" name="pentaho-platform-repository" rev="${project.revision}" changing="true" transitive="false"/>
 
 	    <!-- external dependencies -->
 	    <dependency org="commons-collections" name="commons-collections" rev="3.2" transitive="false"/>
