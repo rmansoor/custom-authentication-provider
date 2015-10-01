@@ -23,7 +23,7 @@
     </bean>
 
   <!-- UserDetailsService that delegates to an IUserRoleDao -->
-  <bean id="customUserDetailsService" class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserDetailsService">
+  <bean id="customUserDetailsService" class="org.pentaho.custom.authentication.provider.service.CustomUserDetailsService">
     <property name="userRoleDao">
       <ref local="hibernateUserRoleDao" />
     </property>
@@ -53,7 +53,7 @@
   <!--  Custom UserRoleListService -->
   <!--  Requires UserDetailsService, UserRoleDao, userNameUtils, roleNameUtils and roleMapper -->
   <bean id="userRoleListService0"
-		class="org.pentaho.custom.authentication.provider.userroledao.service.CustomUserRoleListService">
+		class="org.pentaho.custom.authentication.provider.service.CustomUserRoleListService">
 		<property name="userDetailsService" ref="customUserDetailsService" />
 		<property name="userRoleDao" ref="hibernateUserRoleDao" />
 	     <property name="userNameUtils">
@@ -114,19 +114,19 @@
   
   <!--  Created a simple Base64Password Encoder for encoding password for the users -->  
   <bean id="customPasswordEncoder"
-    class="org.pentaho.custom.authentication.provider.Base64PasswordEncoder" />
+    class="org.pentaho.platform.authentication.hibernate.Base64PasswordEncoder" />
 
 
 
   <!-- IUserRoleDao implementation -->
-  <bean id="hibernateUserRoleDao" class="org.pentaho.custom.authentication.provider.userroledao.hibernate.HibernateUserRoleDao"
+  <bean id="hibernateUserRoleDao" class="org.pentaho.platform.authentication.hibernate.HibernateUserRoleDao"
     init-method="init">
     <property name="sessionFactory">
       <ref local="sessionFactory" />
     </property>
     <property name="initHandler">
       <!-- detects if USERS table is empty and if so, inserts sample users and roles -->
-      <bean class="org.pentaho.custom.authentication.provider.userroledao.hibernate.sample.SampleUsersAndRolesInitHandler">
+      <bean class="org.pentaho.platform.authentication.hibernate.sample.SampleUsersAndRolesInitHandler">
         <property name="sessionFactory">
           <ref local="sessionFactory" />
         </property>
@@ -138,7 +138,7 @@
   </bean>
 
   <!-- an IUserRoleDao that decorates another IUserRoleDao with transactions -->
-  <bean id="txnUserRoleDao" class="org.pentaho.custom.authentication.provider.userroledao.hibernate.UserRoleDaoTransactionDecorator">
+  <bean id="txnUserRoleDao" class="org.pentaho.platform.authentication.hibernate.UserRoleDaoTransactionDecorator">
     <property name="userRoleDao">
       <ref local="hibernateUserRoleDao" />
     </property>

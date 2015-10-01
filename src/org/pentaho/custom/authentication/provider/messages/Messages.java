@@ -15,7 +15,7 @@
  * Copyright 2007 - 2009 Pentaho Corporation.  All rights reserved.
  *
 */
-package org.pentaho.custom.authentication.provider.userroledao.messages;
+package org.pentaho.custom.authentication.provider.messages;
 
 import org.pentaho.platform.util.messages.MessagesBase;
 

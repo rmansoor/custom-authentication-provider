@@ -15,17 +15,16 @@
  * Copyright 2007 - 2009 Pentaho Corporation.  All rights reserved.
  *
 */
-package org.pentaho.custom.authentication.provider.userroledao.service;
+package org.pentaho.custom.authentication.provider.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.pentaho.custom.authentication.provider.IRole;
-import org.pentaho.custom.authentication.provider.IUser;
-import org.pentaho.custom.authentication.provider.IUserRoleDao;
-import org.pentaho.custom.authentication.provider.UncategorizedUserRoleDaoException;
-import org.pentaho.custom.authentication.provider.userroledao.messages.Messages;
+import org.pentaho.platform.authentication.hibernate.IRole;
+import org.pentaho.platform.authentication.hibernate.IUser;
+import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
+import org.pentaho.platform.authentication.hibernate.UncategorizedUserRoleDaoException;
+import org.pentaho.custom.authentication.provider.messages.Messages;
 import org.pentaho.platform.api.engine.security.IAuthenticationRoleMapper;
 import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
 import org.springframework.dao.DataAccessException;
