@@ -20,10 +20,12 @@ package org.pentaho.custom.authentication.provider.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.pentaho.platform.authentication.hibernate.IRole;
 import org.pentaho.platform.authentication.hibernate.IUser;
 import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
 import org.pentaho.platform.authentication.hibernate.UncategorizedUserRoleDaoException;
+import org.pentaho.platform.api.engine.security.IAuthenticationRoleMapper;
 import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.GrantedAuthority;
@@ -37,7 +39,6 @@ import org.springframework.security.userdetails.UsernameNotFoundException;
 /**
  * A <code>UserDetailsService</code> that delegates to an {@link IUserRoleDao} to load users by username.
  * 
- * @author mlowery
  */
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -54,6 +55,8 @@ public class CustomUserDetailsService implements UserDetailsService {
   
   private ITenantedPrincipleNameResolver userNameUtils;
   
+  private IAuthenticationRoleMapper roleMapper;
+  
   // ~ Constructors ====================================================================================================
 
   // ~ Methods =========================================================================================================
@@ -63,6 +66,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     final boolean CREDS_NON_EXPIRED = true;
     final boolean ACCOUNT_NON_LOCKED = true;
 
+    // Retrieve the user from the authentication system
+    
     IUser user;
     try {
       user = userRoleDao.getUser(getUserNameUtils().getPrincipleName( username));
@@ -70,10 +75,11 @@ public class CustomUserDetailsService implements UserDetailsService {
       throw new UserDetailsException("Unable to get the user role dao"); //$NON-NLS-1$
     }
 
+    // Check if the user is null then throw a UsernameNotFoundException 
     if (user == null) {
       throw new UsernameNotFoundException("Username [ " + getUserNameUtils().getPrincipleName( username) + "] not found"); //$NON-NLS-1$
     } else {
-      // convert IUser to a UserDetails instance
+      // Convert the IRole to GrantedAuthority
       int authsSize = user.getRoles() != null ? user.getRoles().size() : 0;
       GrantedAuthority[] auths = new GrantedAuthority[authsSize];
       int i = 0;
@@ -83,12 +89,27 @@ public class CustomUserDetailsService implements UserDetailsService {
 
       List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>(Arrays.asList(auths));
       
+      // Check if user has no roles. In this case, the user is not going to be able to do much
       if (authorities.size() == 0) {
         throw new UsernameNotFoundException("User [ " + getUserNameUtils().getPrincipleName( username) + "] does not have any role"); //$NON-NLS-1$
       }
       
+      // This role will be added to all user's roles
       if ( defaultRole != null && !authorities.contains( defaultRole ) ) {
         authorities.add( defaultRole );
+      }
+      
+      // also add roles mapped to pentaho security roles if available
+      if ( roleMapper != null ) {
+        List<GrantedAuthority> currentAuthorities = new ArrayList<GrantedAuthority>();
+        currentAuthorities.addAll( authorities );
+
+        for ( GrantedAuthority role : currentAuthorities ) {
+          GrantedAuthority mappedRole = new GrantedAuthorityImpl( roleMapper.toPentahoRole( role.getAuthority() ) );
+          if ( !authorities.contains( mappedRole ) ) {
+            authorities.add( mappedRole );
+          }
+        }
       }
 
       GrantedAuthority[] arrayAuths = authorities.toArray(new GrantedAuthority[authorities.size()]);
@@ -119,6 +140,10 @@ public class CustomUserDetailsService implements UserDetailsService {
    */
   public void setDefaultRole(String defaultRole) {
       this.defaultRole = new GrantedAuthorityImpl(defaultRole);
+  }
+  
+  public void setRoleMapper( IAuthenticationRoleMapper roleMapper ) {
+    this.roleMapper = roleMapper;
   }
   
   /**

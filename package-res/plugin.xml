@@ -2,7 +2,7 @@
 
 <plugin title="Custom Authentication Plugin" name="custom-authentication-plugin">
 
-   <lifecycle-listener class="org.pentaho.custom.authentication.provider.CustomAuthenticationProviderPluginLifecycleListener"/>
+   <lifecycle-listener class="org.pentaho.custom.authentication.provider.CustomPluginLifecycleListener"/>
    
    <static-paths>
    

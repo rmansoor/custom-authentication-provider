@@ -9,7 +9,7 @@ import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.springframework.security.userdetails.UserDetailsService;
 
 
-public class CustomAuthenticationProviderPluginLifecycleListener implements IPluginLifecycleListener, IPlatformReadyListener {
+public class CustomPluginLifecycleListener implements IPluginLifecycleListener, IPlatformReadyListener {
 
   @Override
   public void ready() throws PluginLifecycleException {
@@ -19,22 +19,20 @@ public class CustomAuthenticationProviderPluginLifecycleListener implements IPlu
 
   @Override
   public void init() throws PluginLifecycleException {
-    // TODO Auto-generated method stub
-    
+	// TODO Auto-generated method stub
+	
   }
 
   @Override
   public void loaded() throws PluginLifecycleException {
-    // TODO Auto-generated method stub
-    
+	// TODO Auto-generated method stub
+	
   }
 
   @Override
   public void unLoaded() throws PluginLifecycleException {
-    // TODO Auto-generated method stub
-    
+	// TODO Auto-generated method stub
+	
   }
-  
-  
 
 }
