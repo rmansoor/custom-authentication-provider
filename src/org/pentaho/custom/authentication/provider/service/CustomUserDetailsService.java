@@ -18,12 +18,15 @@ package org.pentaho.custom.authentication.provider.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
 import org.pentaho.platform.authentication.hibernate.IRole;
 import org.pentaho.platform.authentication.hibernate.IUser;
 import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
 import org.pentaho.platform.authentication.hibernate.UncategorizedUserRoleDaoException;
 import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.GrantedAuthority;
 import org.springframework.security.GrantedAuthorityImpl;
@@ -88,7 +91,7 @@ public class CustomUserDetailsService implements UserDetailsService {
       }
       
       // Add default role to all authenticating users
-      if ( defaultRole != null && !authorities.contains( defaultRole ) ) {
+      if ( getDefaultRole() != null && !authorities.contains( defaultRole ) ) {
         authorities.add( defaultRole );
       }
 
@@ -106,22 +109,21 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
   public ITenantedPrincipleNameResolver getUserNameUtils() {
+	if (userNameUtils == null) {
+	  userNameUtils = PentahoSystem.get( ITenantedPrincipleNameResolver.class, "tenantedUserNameUtils", null );
+    }
     return userNameUtils;
   }
 
-  public void setUserNameUtils( ITenantedPrincipleNameResolver userNameUtils ) {
-    this.userNameUtils = userNameUtils;
-  }  
-  
-  /**
-   * The default role which will be assigned to all users.
-   *
-   * @param defaultRole the role name, including any desired prefix.
-   */
-  public void setDefaultRole(String defaultRole) {
-      this.defaultRole = new GrantedAuthorityImpl(defaultRole);
+  public GrantedAuthority getDefaultRole() {
+	  if (defaultRole == null) {
+		  String defaultRoleAsString =  PentahoSystem.get( String.class, "defaultRole", null ); 
+		  if(defaultRoleAsString != null && defaultRoleAsString.length() > 0) {
+			  this.defaultRole = new  GrantedAuthorityImpl(defaultRoleAsString);  
+		  }
+	  }
+	  return defaultRole;
   }
-  
   /**
    * A data access exception specific to a <code>IUserRoleDao</code>-based <code>UserDetailsService</code>.
    */

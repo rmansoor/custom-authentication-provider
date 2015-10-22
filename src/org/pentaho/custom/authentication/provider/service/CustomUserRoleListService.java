@@ -28,6 +28,8 @@ import org.pentaho.platform.authentication.hibernate.CustomRole;
 import org.pentaho.platform.authentication.hibernate.IRole;
 import org.pentaho.platform.authentication.hibernate.IUser;
 import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
+import org.springframework.security.GrantedAuthorityImpl;
 
 /**
  * An {@link IUserRoleListService} that delegates to an {@link IUserRoleDao}.
@@ -36,12 +38,12 @@ import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
  */
 public class CustomUserRoleListService implements IUserRoleListService {
 
-  // ~ Static fields/initializers ====================================================================================== 
+  // ~ Static fields/initializers ======================================================================================
 
   // ~ Instance fields =================================================================================================
 
   private IUserRoleDao userRoleDao;
-  
+
   private String defaultRole;
 
   private ITenantedPrincipleNameResolver userNameUtils;
@@ -58,12 +60,12 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   @Override
   public List<String> getAllRoles() {
-    return getAllRoles(null);
+    return getAllRoles( null );
   }
 
   @Override
   public List<String> getAllUsers() {
-    return getAllUsers(null);
+    return getAllUsers( null );
   }
 
   @Override
@@ -76,12 +78,12 @@ public class CustomUserRoleListService implements IUserRoleListService {
   public List<String> getAllRoles( ITenant tenant ) {
     List<IRole> roles = userRoleDao.getRoles();
 
-    List<String> auths = new ArrayList<String>(roles.size());
+    List<String> auths = new ArrayList<String>( roles.size() );
 
     for ( IRole role : roles ) {
-        auths.add( role.getName() );
+      auths.add( role.getName() );
     }
-    
+
     return auths;
   }
 
@@ -91,8 +93,8 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
     List<String> usernames = new ArrayList<String>();
 
-    for (IUser user : users) {
-      usernames.add(user.getUsername());
+    for ( IUser user : users ) {
+      usernames.add( user.getUsername() );
     }
 
     return usernames;
@@ -102,15 +104,15 @@ public class CustomUserRoleListService implements IUserRoleListService {
   public List<String> getUsersInRole( ITenant tenant, String roleName ) {
 
     String updateRole = roleNameUtils.getPrincipleName( roleName );
-    IRole role = userRoleDao.getRole(updateRole);
-    if (role == null) {
+    IRole role = userRoleDao.getRole( updateRole );
+    if ( role == null ) {
       return Collections.emptyList();
     }
 
     List<String> usernames = new ArrayList<String>();
 
-    for (IUser user : role.getUsers()) {
-      usernames.add(user.getUsername());
+    for ( IUser user : role.getUsers() ) {
+      usernames.add( user.getUsername() );
     }
 
     return usernames;
@@ -119,48 +121,51 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   @Override
   public List<String> getRolesForUser( ITenant tenant, String username ) {
-	IUser user = userRoleDao.getUser(username);
-	// If no user found return null
-	if ( user == null ) {
-		return null;
-	}
+    IUser user = userRoleDao.getUser( username );
+    // If no user found return null
+    if ( user == null ) {
+      return null;
+    }
 
-	// Retrieve the user from the customer authentication provider
-	Set<IRole> roleSet = user.getRoles();
-	
-	// Add the default role to the list of roles retrieved from the user
-	if ( defaultRole != null && !roleSet.contains( defaultRole ) ) {
-	   	roleSet.add( new CustomRole(defaultRole) );
-	}	  
-    List<String> roles = new ArrayList<String>(roleSet.size());
-    for (IRole role : roleSet) {
-        roles.add( role.getName() );
+    // Retrieve the user from the customer authentication provider
+    Set<IRole> roleSet = user.getRoles();
+
+    // Add the default role to the list of roles retrieved from the user
+    if ( defaultRole != null && !roleSet.contains( defaultRole ) ) {
+      roleSet.add( new CustomRole( defaultRole ) );
+    }
+    List<String> roles = new ArrayList<String>( roleSet.size() );
+    for ( IRole role : roleSet ) {
+      roles.add( role.getName() );
     }
     return roles;
   }
 
-  public void setUserRoleDao(IUserRoleDao userRoleDao) {
+  public void setUserRoleDao( IUserRoleDao userRoleDao ) {
     this.userRoleDao = userRoleDao;
   }
 
-  public void setDefaultRole(String defaultRole) {
-      this.defaultRole = defaultRole;
+  public String getDefaultRole() {
+    if (defaultRole == null) {
+      defaultRole = PentahoSystem.get( String.class, "defaultRole", null ); 
+    }
+    return defaultRole;
   }
 
-
   public ITenantedPrincipleNameResolver getUserNameUtils() {
+    if ( userNameUtils == null ) {
+      userNameUtils =
+          PentahoSystem.get( ITenantedPrincipleNameResolver.class, "tenantedUserNameUtils", null );
+    }
     return userNameUtils;
   }
 
-  public void setUserNameUtils( ITenantedPrincipleNameResolver userNameUtils ) {
-    this.userNameUtils = userNameUtils;
-  }
-
   public ITenantedPrincipleNameResolver getRoleNameUtils() {
+    if ( roleNameUtils == null ) {
+      roleNameUtils =
+          PentahoSystem.get( ITenantedPrincipleNameResolver.class, "tenantedRoleNameUtils", null );
+    }
     return roleNameUtils;
   }
 
-  public void setRoleNameUtils( ITenantedPrincipleNameResolver roleNameUtils ) {
-    this.roleNameUtils = roleNameUtils;
-  }
 }
