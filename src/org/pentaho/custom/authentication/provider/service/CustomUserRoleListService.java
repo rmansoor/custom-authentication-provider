@@ -30,6 +30,7 @@ import org.pentaho.platform.authentication.hibernate.CustomRole;
 import org.pentaho.platform.authentication.hibernate.IRole;
 import org.pentaho.platform.authentication.hibernate.IUser;
 import org.pentaho.platform.authentication.hibernate.IUserRoleDao;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 /**
  * An {@link IUserRoleListService} that delegates to an {@link IUserRoleDao}.
@@ -106,7 +107,7 @@ public class CustomUserRoleListService implements IUserRoleListService {
   @Override
   public List<String> getUsersInRole( ITenant tenant, String roleName ) {
 
-	// Parse the role name from the tenanted role
+  // Parse the role name from the tenanted role
     String updateRole = roleNameUtils.getPrincipleName( roleName );
 
     // Check if the role exist in the custom authentication provider
@@ -128,21 +129,21 @@ public class CustomUserRoleListService implements IUserRoleListService {
 
   @Override
   public List<String> getRolesForUser( ITenant tenant, String username ) {
-	IUser user = userRoleDao.getUser(username);
-	
-	// If no user found return null
-	if ( user == null ) {
-		return null;
-	}
-	
-	// Retrieve the user from the customer authentication provider
-	Set<IRole> roleSet = user.getRoles();
+  IUser user = userRoleDao.getUser(username);
+  
+  // If no user found return null
+  if ( user == null ) {
+    return null;
+  }
+  
+  // Retrieve the user from the customer authentication provider
+  Set<IRole> roleSet = user.getRoles();
 
-	// Add the default role to the list of roles retrieved from the user
+  // Add the default role to the list of roles retrieved from the user
     if ( defaultRole != null && !roleSet.contains( defaultRole ) ) {
-    	roleSet.add( new CustomRole(defaultRole) );
+      roleSet.add( new CustomRole(defaultRole) );
     }
-	
+  
     // Now convert all the custom role to pentaho specific roles
     
     List<String> roles = new ArrayList<String>(roleSet.size());
@@ -160,24 +161,27 @@ public class CustomUserRoleListService implements IUserRoleListService {
     this.userRoleDao = userRoleDao;
   }
 
-  public void setDefaultRole(String defaultRole) {
-      this.defaultRole = defaultRole;
+  public String getDefaultRole() {
+    if (defaultRole == null) {
+      defaultRole = PentahoSystem.get( String.class, "defaultRole", null ); 
+    }
+    return defaultRole;
   }
 
   public ITenantedPrincipleNameResolver getUserNameUtils() {
+    if ( userNameUtils == null ) {
+      userNameUtils =
+          PentahoSystem.get( ITenantedPrincipleNameResolver.class, "tenantedUserNameUtils", null );
+    }
     return userNameUtils;
   }
 
-  public void setUserNameUtils( ITenantedPrincipleNameResolver userNameUtils ) {
-    this.userNameUtils = userNameUtils;
-  }
-
   public ITenantedPrincipleNameResolver getRoleNameUtils() {
+    if ( roleNameUtils == null ) {
+      roleNameUtils =
+          PentahoSystem.get( ITenantedPrincipleNameResolver.class, "tenantedRoleNameUtils", null );
+    }
     return roleNameUtils;
-  }
-
-  public void setRoleNameUtils( ITenantedPrincipleNameResolver roleNameUtils ) {
-    this.roleNameUtils = roleNameUtils;
   }
   
   public void setRoleMapper( IAuthenticationRoleMapper roleMapper ) {

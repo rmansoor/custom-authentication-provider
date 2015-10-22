@@ -32,21 +32,7 @@
     <property name="userRoleDao">
       <ref local="hibernateUserRoleDao" />
     </property>
-     <property name="userNameUtils">
-      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
-          <pen:attributes>
-          	<pen:attr key="id" value="tenantedUserNameUtils"/>
-          </pen:attributes>
-       </pen:bean>
-    </property>   
     <property name="roleMapper" ref="customRoleMapper" />
-    <property name="defaultRole">
-      <pen:bean class="java.lang.String">
-          <pen:attributes>
-          	<pen:attr key="id" value="defaultRole"/>
-          </pen:attributes>
-       </pen:bean>
-    </property>   
 	  <pen:publish as-type="INTERFACES">
 	      <pen:attributes>
 	        <pen:attr key="providerName" value="custom"/>
@@ -61,28 +47,7 @@
   
   <bean id="customUserRoleListService"
 		class="org.pentaho.custom.authentication.provider.service.CustomUserRoleListService">
-	    <property name="defaultRole">
-    	  <pen:bean class="java.lang.String">
-        	  <pen:attributes>
-          		<pen:attr key="id" value="defaultRole"/>
-          	  </pen:attributes>
-       	  </pen:bean>
-    	</property> 
 		<property name="userRoleDao" ref="hibernateUserRoleDao" />
-	     <property name="userNameUtils">
-	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
-	          <pen:attributes>
-	          	<pen:attr key="id" value="tenantedUserNameUtils"/>
-	          </pen:attributes>
-	       </pen:bean>
-	    </property>    
-	    <property name="roleNameUtils">
-	      <pen:bean class="org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver">
-	          <pen:attributes>
-	          	<pen:attr key="id" value="tenantedRoleNameUtils"/>
-	          </pen:attributes>
-	       </pen:bean>
-	    </property>    
 	    <property name="roleMapper">
 	      <ref bean="customRoleMapper" />
 	    </property>	    
